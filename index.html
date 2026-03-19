@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>아파트 비교 분석</title>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f5f0;--surface:#ffffff;--surface2:#f0f0eb;
+  --border:#e0ddd6;--border2:#c8c4bc;
+  --text:#1a1a1a;--text2:#555550;--text3:#999990;
+  --accent:#4a44cc;--accent-bg:#eeeeff;
+  --green:#0a7a45;--green-bg:#e6f7ee;
+  --red:#cc2200;--red-bg:#fff0ee;
+  --orange:#b85c00;--orange-bg:#fff4e6;
+  --blue:#1155aa;--blue-bg:#e8f0ff;
+  --purple:#7722aa;--purple-bg:#f5eeff;
+  --yellow-bg:#fffbe6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6}
+.header{background:var(--surface);padding:24px 32px;border-bottom:2px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.logo{display:flex;align-items:center;gap:14px}
+.logo-icon{width:42px;height:42px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff}
+.logo h1{font-size:20px;font-weight:700}
+.logo p{font-size:12px;color:var(--text2);margin-top:2px}
+.badge{font-size:12px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);padding:5px 14px;border-radius:20px;font-weight:500}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;padding:20px 32px}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.sc .lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;font-weight:600}
+.sc .val{font-size:19px;font-weight:700;color:var(--text);line-height:1.2}
+.sc .sub{font-size:11px;color:var(--text2);margin-top:3px}
+.wp{margin:0 32px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.wp-head{font-size:12px;color:var(--text2);font-weight:700;margin-bottom:12px}
+.wp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.wp-row{display:flex;align-items:center;gap:10px}
+.wp-row label{font-size:12px;color:var(--text2);min-width:66px;font-weight:500}
+.wp-row input{flex:1;accent-color:var(--accent)}
+.wp-v{font-size:13px;font-weight:700;min-width:16px;text-align:right;color:var(--accent)}
+.filters{padding:0 32px 14px;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.fg{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.fl{font-size:11px;color:var(--text3);min-width:38px;font-weight:700;letter-spacing:.3px}
+.fb{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;font-size:12px;white-space:nowrap;transition:.12s;font-weight:500}
+.fb:hover{border-color:var(--accent);color:var(--accent)}
+.fb.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fsep{width:1px;height:18px;background:var(--border2)}
+.sbar{margin:0 32px 16px}
+.sbar input{width:100%;padding:10px 16px;background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;color:var(--text);font-size:14px;outline:none;transition:.12s;font-family:'Pretendard',sans-serif}
+.sbar input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(74,68,204,.1)}
+.sbar input::placeholder{color:var(--text3)}
+.tbl-wrap{overflow-x:auto;padding:0 32px 48px}
+table{width:100%;border-collapse:collapse;min-width:1280px;background:var(--surface);border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+thead{background:var(--surface2)}
+thead th{padding:12px 14px;font-size:11px;font-weight:700;color:var(--text2);text-align:left;white-space:nowrap;cursor:pointer;user-select:none;text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid var(--border)}
+thead th:hover{color:var(--accent);background:rgba(74,68,204,.04)}
+thead th.sorted{color:var(--accent)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:hover{background:#fafaf8}
+tbody tr.r1{background:var(--yellow-bg)}
+tbody td{padding:14px 14px;vertical-align:top}
+.name-main{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
+.name-sub{font-size:11px;color:var(--text3)}
+.rbadge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.r-중랑구{background:var(--blue-bg);color:var(--blue)}
+.r-관악구{background:var(--green-bg);color:var(--green)}
+.r-금천구{background:var(--orange-bg);color:var(--orange)}
+.r-성북구{background:var(--purple-bg);color:var(--purple)}
+.r-노원구{background:#fffbe6;color:#8b6800}
+.pill{display:inline-block;padding:3px 9px;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap}
+.age-old{background:var(--red-bg);color:var(--red)}
+.age-mid{background:var(--orange-bg);color:var(--orange)}
+.age-new{background:var(--green-bg);color:var(--green)}
+.h-개별{background:var(--green-bg);color:var(--green)}
+.h-지역{background:var(--blue-bg);color:var(--blue)}
+.h-중앙{background:var(--purple-bg);color:var(--purple)}
+.t-평지{background:var(--green-bg);color:var(--green)}
+.t-언덕{background:var(--red-bg);color:var(--red)}
+.walk-g .ws{color:var(--green);font-weight:700;font-size:13px}
+.walk-m .ws{color:var(--orange);font-weight:700;font-size:13px}
+.walk-b .ws{color:var(--text2);font-weight:600;font-size:13px}
+.wl{font-size:11px;color:var(--text3);margin-top:2px}
+.s-상{color:var(--green);font-weight:700;font-size:13px}
+.s-중{color:var(--orange);font-weight:600;font-size:13px}
+.s-하{color:var(--text2);font-size:13px}
+.s-sub{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.5;display:block}
+.fac-item{display:flex;align-items:flex-start;gap:6px;margin-bottom:6px;font-size:12px}
+.fac-item:last-child{margin-bottom:0}
+.fac-ok{color:var(--green)}
+.fac-no{color:var(--text3)}
+.fac-txt{color:var(--text2);line-height:1.4}
+.price-main{font-size:16px;font-weight:800;color:var(--text)}
+.change-up{font-size:12px;font-weight:700;color:var(--red);margin-top:3px}
+.change-dn{font-size:12px;font-weight:600;color:var(--text3);margin-top:3px}
+.score-wrap{display:flex;align-items:center;gap:8px}
+.bar-bg{height:6px;border-radius:3px;background:var(--border);flex:1;min-width:36px}
+.bar-fill{height:100%;border-radius:3px}
+.score-num{font-size:17px;font-weight:800;min-width:28px;text-align:right}
+.rank-n{font-size:14px;font-weight:700;color:var(--text3)}
+.rank-1{color:#b8860b;font-size:16px}
+.horae-wrap{display:flex;flex-wrap:wrap;gap:4px;max-width:220px}
+.tag{display:inline-block;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:600}
+.tag-default{background:var(--accent-bg);color:var(--accent)}
+.tag-gtx{background:var(--red-bg);color:var(--red)}
+.tag-line{background:var(--green-bg);color:var(--green)}
+.tag-re{background:var(--orange-bg);color:var(--orange)}
+.footer-note{padding:16px 32px 48px;font-size:12px;color:var(--text3);line-height:2;border-top:1px solid var(--border);margin:0 32px}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">🏢</div>
+    <div>
+      <h1>아파트 비교 분석</h1>
+      <p>14개 단지 · 국토부 실거래가 기반</p>
+    </div>
+  </div>
+  <div class="badge">2026년 3월 기준</div>
+</div>
+<div class="summary" id="summary"></div>
+<div class="wp">
+  <div class="wp-head">⚖️ 우선순위 가중치 — 슬라이더 조절 시 종합점수 실시간 반영</div>
+  <div class="wp-grid">
+    <div class="wp-row"><label>역 거리</label><input type="range" id="w0" min="0" max="5" value="2" step="1" oninput="uw()"><span class="wp-v" id="wv0">2</span></div>
+    <div class="wp-row"><label>시세 상승</label><input type="range" id="w1" min="0" max="5" value="2" step="1" oninput="uw()"><span class="wp-v" id="wv1">2</span></div>
+    <div class="wp-row"><label>개발 호재</label><input type="range" id="w2" min="0" max="5" value="2" step="1" oninput="uw()"><span class="wp-v" id="wv2">2</span></div>
+    <div class="wp-row"><label>연식(신축)</label><input type="range" id="w3" min="0" max="5" value="1" step="1" oninput="uw()"><span class="wp-v" id="wv3">1</span></div>
+    <div class="wp-row"><label>세대수</label><input type="range" id="w4" min="0" max="5" value="1" step="1" oninput="uw()"><span class="wp-v" id="wv4">1</span></div>
+    <div class="wp-row"><label>강남 거리</label><input type="range" id="w5" min="0" max="5" value="1" step="1" oninput="uw()"><span class="wp-v" id="wv5">1</span></div>
+  </div>
+</div>
+<div class="filters">
+  <div class="fg"><span class="fl">지역</span>
+    <button class="fb on" onclick="sf('region','전체')">전체</button>
+    <button class="fb" onclick="sf('region','중랑구')">중랑구</button>
+    <button class="fb" onclick="sf('region','관악구')">관악구</button>
+    <button class="fb" onclick="sf('region','금천구')">금천구</button>
+    <button class="fb" onclick="sf('region','성북구')">성북구</button>
+    <button class="fb" onclick="sf('region','노원구')">노원구</button>
+  </div>
+  <div class="fsep"></div>
+  <div class="fg"><span class="fl">난방</span>
+    <button class="fb on" onclick="sf('heat','전체')">전체</button>
+    <button class="fb" onclick="sf('heat','개별')">개별</button>
+    <button class="fb" onclick="sf('heat','지역')">지역</button>
+    <button class="fb" onclick="sf('heat','중앙')">중앙</button>
+  </div>
+  <div class="fsep"></div>
+  <div class="fg"><span class="fl">지형</span>
+    <button class="fb on" onclick="sf('terrain','전체')">전체</button>
+    <button class="fb" onclick="sf('terrain','평지')">평지</button>
+    <button class="fb" onclick="sf('terrain','언덕')">언덕</button>
+  </div>
+  <div class="fsep"></div>
+  <div class="fg"><span class="fl">역거리</span>
+    <button class="fb on" onclick="sf('walk','전체')">전체</button>
+    <button class="fb" onclick="sf('walk','5')">5분이내</button>
+    <button class="fb" onclick="sf('walk','10')">10분이내</button>
+  </div>
+  <div class="fsep"></div>
+  <div class="fg"><span class="fl">강남</span>
+    <button class="fb on" onclick="sf('gang','전체')">전체</button>
+    <button class="fb" onclick="sf('gang','40')">~40분</button>
+    <button class="fb" onclick="sf('gang','50')">~50분</button>
+    <button class="fb" onclick="sf('gang','51')">50분+</button>
+  </div>
+  <div class="fsep"></div>
+  <div class="fg"><span class="fl">호재</span>
+    <button class="fb on" onclick="sf('horae','전체')">전체</button>
+    <button class="fb" onclick="sf('horae','면목선')">면목선</button>
+    <button class="fb" onclick="sf('horae','GTX')">GTX-E</button>
+    <button class="fb" onclick="sf('horae','재건축')">재건축</button>
+    <button class="fb" onclick="sf('horae','신안산선')">신안산선</button>
+    <button class="fb" onclick="sf('horae','동북선')">동북선</button>
+  </div>
+  <div class="fsep"></div>
+  <div class="fg"><span class="fl">세대수</span>
+    <button class="fb on" onclick="sf('units','전체')">전체</button>
+    <button class="fb" onclick="sf('units','500')">500+</button>
+    <button class="fb" onclick="sf('units','1000')">1000+</button>
+    <button class="fb" onclick="sf('units','1500')">1500+</button>
+  </div>
+  <div class="fsep"></div>
+  <div class="fg"><span class="fl">시세</span>
+    <button class="fb on" onclick="sf('rise','전체')">전체</button>
+    <button class="fb" onclick="sf('rise','plus')">상승만</button>
+    <button class="fb" onclick="sf('rise','10')">+10%이상</button>
+  </div>
+</div>
+<div class="sbar"><input id="search" placeholder="🔍  단지명 검색..." oninput="render()"></div>
+<div class="tbl-wrap">
+<table>
+<thead><tr>
+  <th style="width:44px">순위</th>
+  <th id="th-score" onclick="sb('score')" class="sorted" style="width:130px">점수 ↓</th>
+  <th onclick="sb('name')" style="min-width:155px">단지명</th>
+  <th style="width:85px">지역</th>
+  <th onclick="sb('year')" style="width:105px">연식</th>
+  <th onclick="sb('units')" style="width:75px">세대수</th>
+  <th onclick="sb('walk')" style="min-width:150px">가까운 역</th>
+  <th style="width:75px">난방</th>
+  <th style="width:65px">지형</th>
+  <th style="width:100px">학군</th>
+  <th style="min-width:170px">편의시설</th>
+  <th onclick="sb('gangnam')" style="width:110px">강남 소요</th>
+  <th onclick="sb('price')" style="width:120px">20평대 시세</th>
+  <th onclick="sb('rise')" style="width:125px">1년 변동</th>
+  <th style="min-width:210px">개발 호재</th>
+</tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+<div class="footer-note">
+  ※ 20평대 시세는 국토부 실거래가 기준 해당 단지 가장 작은 20평대 평형의 최근 거래가입니다 (aptrank.com 기준).<br>
+  ※ 1년 변동은 동일 평형 전년 동기 대비 최고가 변동 기준이며, 층·향·타입에 따라 실제 차이가 있습니다.<br>
+  ※ 종합점수는 위 가중치 슬라이더 설정에 따라 실시간으로 변경됩니다. 투자 결정 전 반드시 전문가와 상담하세요.
+</div>
+<script>
+var D=[
+  {name:'관악산휴먼시아1단지',region:'관악구',dong:'신림동',year:2008,units:545,
+   walkMin:999,walkStation:'버스권',walkLine:'(역 없음)',walkC:'b',
+   heat:'개별',terrain:'언덕',schoolGrade:'중',schoolLabel:'난향초 · 난우중',
+   mart:'롯데마트 신림점',martY:true,martDist:'도보 15분',
+   hosp:'신림성모병원',hospY:false,hospDist:'도보 18분',
+   gangnam:50,gangLabel:'강남역 50분',price:6.2,priceLabel:'6.2억',prev:5.7,
+   horae:['LH공공분양','관악산 숲세권','신림선 연장 기대'],hScore:1,hStr:'LH공공분양 관악산 숲세권 신림선'},
+  {name:'금천현대',region:'금천구',dong:'독산동',year:2002,units:996,
+   walkMin:3,walkStation:'독산역 (1호선)',walkLine:'도보 3분',walkC:'g',
+   heat:'개별',terrain:'평지',schoolGrade:'하',schoolLabel:'하안남초 · 안천중',
+   mart:'롯데마트 금천점',martY:true,martDist:'도보 5분',
+   hosp:'희명병원',hospY:true,hospDist:'도보 15분',
+   gangnam:35,gangLabel:'강남역 35분',price:6.1,priceLabel:'6.1억',prev:5.9,
+   horae:['신안산선 독산역 착공','더블역세권 예정','가산디지털 직주근접'],hScore:3,hStr:'신안산선 독산역 착공 더블역세권 가산디지털'},
+  {name:'면목두산1단지',region:'중랑구',dong:'면목동',year:1997,units:710,
+   walkMin:7,walkStation:'용마산역 (7호선)',walkLine:'도보 7분',walkC:'m',
+   heat:'개별',terrain:'평지',schoolGrade:'중',schoolLabel:'면목초 · 면목중',
+   mart:'홈플러스 면목점',martY:true,martDist:'도보 10분',
+   hosp:'서울의료원',hospY:false,hospDist:'차량 10분',
+   gangnam:40,gangLabel:'강남역 40분',price:5.45,priceLabel:'5.45억',prev:5.0,
+   horae:['면목선(경전철) 예정','재건축 기대'],hScore:3,hStr:'면목선 경전철 예정 재건축'},
+  {name:'면목두산4,5단지',region:'중랑구',dong:'면목동',year:2000,units:555,
+   walkMin:8,walkStation:'면목역 (7호선)',walkLine:'도보 8분',walkC:'m',
+   heat:'개별',terrain:'평지',schoolGrade:'중',schoolLabel:'면목초 · 중랑중',
+   mart:'홈플러스 면목점',martY:true,martDist:'도보 10분',
+   hosp:'서울의료원',hospY:false,hospDist:'차량 10분',
+   gangnam:35,gangLabel:'강남역 35분',price:6.5,priceLabel:'6.5억',prev:5.9,
+   horae:['면목선(경전철) 예정','7호선 역세권'],hScore:3,hStr:'면목선 경전철 예정 7호선 역세권'},
+  {name:'신내데시앙',region:'중랑구',dong:'신내동',year:2010,units:1326,
+   walkMin:10,walkStation:'신내역 (경춘선)',walkLine:'도보 10분',walkC:'m',
+   heat:'지역',terrain:'평지',schoolGrade:'중',schoolLabel:'신현초 · 신현중',
+   mart:'홈플러스 신내점',martY:true,martDist:'도보 8분',
+   hosp:'서울의료원',hospY:true,hospDist:'도보 15분',
+   gangnam:50,gangLabel:'강남역 50분',price:7.2,priceLabel:'7.2억',prev:6.4,
+   horae:['면목선 수혜','GTX-E 신내역 예정','노후계획도시 정비'],hScore:5,hStr:'면목선 수혜 GTX 신내역 예정 노후계획도시'},
+  {name:'신내6단지시영',region:'중랑구',dong:'신내동',year:1996,units:1609,
+   walkMin:3,walkStation:'봉화산역 (6호선)',walkLine:'도보 3분',walkC:'g',
+   heat:'지역',terrain:'평지',schoolGrade:'중',schoolLabel:'봉화초 · 동원중',
+   mart:'홈플러스 신내점',martY:true,martDist:'도보 5분',
+   hosp:'서울의료원',hospY:true,hospDist:'도보 10분',
+   gangnam:50,gangLabel:'강남역 50분',price:6.7,priceLabel:'6.7억',prev:5.9,
+   horae:['봉화산역 초역세권','GTX-E 수혜','면목선 수혜','노후계획도시 정비'],hScore:5,hStr:'봉화산역 초역세권 GTX 수혜 면목선 수혜 노후계획도시 재건축'},
+  {name:'신내4단지',region:'중랑구',dong:'묵동',year:1996,units:1070,
+   walkMin:12,walkStation:'신내역 (경춘선)',walkLine:'도보 12분',walkC:'b',
+   heat:'지역',terrain:'평지',schoolGrade:'중',schoolLabel:'봉화초 · 동원중',
+   mart:'홈플러스 신내점',martY:true,martDist:'도보 15분',
+   hosp:'서울의료원',hospY:false,hospDist:'도보 20분',
+   gangnam:55,gangLabel:'강남역 55분',price:4.6,priceLabel:'4.6억',prev:4.1,
+   horae:['GTX-E 수혜','노후계획도시 정비','재건축 기대'],hScore:4,hStr:'GTX 수혜 노후계획도시 재건축'},
+  {name:'신내9단지',region:'중랑구',dong:'신내동',year:1996,units:1650,
+   walkMin:5,walkStation:'봉화산역 (6호선)',walkLine:'도보 5분',walkC:'g',
+   heat:'지역',terrain:'평지',schoolGrade:'중',schoolLabel:'신내초 · 신현중',
+   mart:'홈플러스 신내점',martY:true,martDist:'도보 5분',
+   hosp:'서울의료원',hospY:true,hospDist:'도보 10분',
+   gangnam:50,gangLabel:'강남역 50분',price:5.2,priceLabel:'5.2억',prev:4.5,
+   horae:['봉화산역 역세권','GTX-E 수혜','면목선 수혜','노후계획도시 정비','재건축 기대'],hScore:5,hStr:'봉화산역 역세권 GTX 수혜 면목선 수혜 노후계획도시 재건축'},
+  {name:'동성1,2차',region:'중랑구',dong:'신내동',year:1993,units:1047,
+   walkMin:10,walkStation:'신내역 (경춘선)',walkLine:'도보 10분',walkC:'m',
+   heat:'중앙',terrain:'평지',schoolGrade:'중',schoolLabel:'신내초 · 신현중',
+   mart:'홈플러스 신내점',martY:true,martDist:'도보 10분',
+   hosp:'서울의료원',hospY:true,hospDist:'도보 15분',
+   gangnam:52,gangLabel:'강남역 52분',price:5.3,priceLabel:'5.3억',prev:4.7,
+   horae:['면목선 역세권 편입 예정','GTX-E 수혜','재건축 기대','노후계획도시'],hScore:4,hStr:'면목선 역세권 편입 예정 GTX 수혜 재건축 노후계획도시'},
+  {name:'중화한신',region:'중랑구',dong:'중화동',year:1998,units:1544,
+   walkMin:5,walkStation:'상봉역 (7호선·경춘선)',walkLine:'도보 5분',walkC:'g',
+   heat:'중앙',terrain:'평지',schoolGrade:'중',schoolLabel:'중화초 · 중화중',
+   mart:'이마트 상봉점',martY:true,martDist:'도보 10분',
+   hosp:'서울의료원',hospY:false,hospDist:'차량 15분',
+   gangnam:36,gangLabel:'강남역 36분',price:8.0,priceLabel:'8.0억',prev:6.8,
+   horae:['3호선·7호선·경춘선 트리플역세권','상봉터미널 재개발'],hScore:2,hStr:'7호선 경의중앙선 경춘선 트리플역세권 상봉터미널 재개발'},
+  {name:'중화동건영2차',region:'중랑구',dong:'상봉동',year:1996,units:716,
+   walkMin:5,walkStation:'망우역 (경의중앙·경춘선)',walkLine:'도보 5분',walkC:'g',
+   heat:'중앙',terrain:'평지',schoolGrade:'중',schoolLabel:'중화초 · 중화중',
+   mart:'이마트 상봉점',martY:true,martDist:'도보 15분',
+   hosp:'서울의료원',hospY:false,hospDist:'차량 15분',
+   gangnam:40,gangLabel:'강남역 40분',price:5.8,priceLabel:'5.8억',prev:5.3,
+   horae:['망우역 역세권','경의중앙·경춘선 이용'],hScore:1,hStr:'망우역 역세권 경의중앙 경춘선'},
+  {name:'푸른마을동아',region:'성북구',dong:'정릉동',year:2003,units:529,
+   walkMin:15,walkStation:'버스 위주',walkLine:'우이신설 연장 시 개선',walkC:'b',
+   heat:'개별',terrain:'언덕',schoolGrade:'상',schoolLabel:'숭덕초 · 고려대부중',
+   mart:'대형마트 없음',martY:false,martDist:'GS슈퍼 5분',
+   hosp:'고려대병원',hospY:true,hospDist:'차량 10분',
+   gangnam:55,gangLabel:'강남역 55분',price:5.5,priceLabel:'5.5억',prev:5.1,
+   horae:['우이신설 연장 기대','북한산 숲세권','고대 학세권'],hScore:2,hStr:'우이신설선 연장 기대 북한산 숲세권'},
+  {name:'경남아너스빌',region:'노원구',dong:'중계동',year:2002,units:299,
+   walkMin:8,walkStation:'상계역 (4호선)',walkLine:'도보 8분',walkC:'m',
+   heat:'개별',terrain:'평지',schoolGrade:'상',schoolLabel:'중계초 · 중계중',
+   mart:'롯데마트 노원점',martY:true,martDist:'도보 20분',
+   hosp:'노원을지병원',hospY:true,hospDist:'도보 15분',
+   gangnam:48,gangLabel:'강남역 48분',price:5.8,priceLabel:'5.8억',prev:5.3,
+   horae:['중계 학군지','동북선 수혜','브랜드 아파트'],hScore:2,hStr:'중계 학군지 동북선 수혜 브랜드 아파트'},
+  {name:'중계무지개',region:'노원구',dong:'중계동',year:1991,units:2433,
+   walkMin:5,walkStation:'중계역 (7호선)',walkLine:'도보 5분',walkC:'g',
+   heat:'중앙',terrain:'평지',schoolGrade:'상',schoolLabel:'청계초 · 중원중',
+   mart:'롯데마트 노원점',martY:true,martDist:'도보 15분',
+   hosp:'노원을지병원',hospY:true,hospDist:'도보 20분',
+   gangnam:38,gangLabel:'강남역 38분',price:5.8,priceLabel:'5.8억 (49㎡)',prev:5.0,
+   horae:['중계역 초역세권','대단지 2433세대','재건축 추진','동북선 수혜'],hScore:5,hStr:'중계역 초역세권 대단지 재건축 추진 동북선 수혜'},
+];
+
+// data.json에서 실시간 시세 로드
+function loadPrices() {
+  fetch('data.json?t=' + Date.now())
+    .then(function(r){ return r.json(); })
+    .then(function(json){
+      var updated = '';
+      D.forEach(function(d){
+        if(json[d.name]){
+          var p = json[d.name];
+          if(p.price) d.price = p.price;
+          if(p.price) d.priceLabel = p.price + '억';
+          if(p.prev) d.prev = p.prev;
+          if(p.updated) updated = p.updated;
+        }
+      });
+      if(updated){
+        var el = document.querySelector('.badge');
+        if(el) el.textContent = updated + ' 기준 (자동업데이트)';
+      }
+      render();
+    })
+    .catch(function(){
+      render(); // data.json 없으면 하드코딩 데이터로
+    });
+}
+
+var F={region:'전체',heat:'전체',terrain:'전체',horae:'전체',walk:'전체',gang:'전체',units:'전체',rise:'전체'};
+var SK='score',SD=-1;
+var W=[2,2,2,1,1,1];
+
+function uw(){for(var i=0;i<6;i++){W[i]=parseInt(document.getElementById('w'+i).value);document.getElementById('wv'+i).textContent=W[i];}render();}
+
+function calcScore(d){
+  var wS=d.walkMin<=5?100:d.walkMin<=10?65:d.walkMin<=15?35:10;
+  var rn=Math.round((d.price-d.prev)/d.prev*100);
+  var rS=rn>0?Math.min(100,rn*5):Math.max(0,50+rn*2);
+  var hS=d.hScore*20;
+  var aS=Math.max(0,100-Math.round((2026-d.year)*3));
+  var uS=Math.round(d.units/2433*100);
+  var gS=d.gangnam<=35?100:d.gangnam<=42?80:d.gangnam<=52?55:30;
+  var tot=W[0]+W[1]+W[2]+W[3]+W[4]+W[5]||1;
+  return Math.round((wS*W[0]+rS*W[1]+hS*W[2]+aS*W[3]+uS*W[4]+gS*W[5])/tot);
+}
+
+function sf(type,val){
+  F[type]=val;
+  document.querySelectorAll('.fb').forEach(function(b){var oc=b.getAttribute('onclick')||'';if(oc.indexOf("'"+type+"'")>=0)b.classList.toggle('on',oc.indexOf("'"+val+"'")>=0);});
+  render();
+}
+
+function sb(k){
+  document.querySelectorAll('thead th').forEach(function(t){t.classList.remove('sorted');});
+  var el=document.getElementById('th-'+k);if(el)el.classList.add('sorted');
+  if(SK===k)SD*=-1;else{SK=k;SD=-1;}render();
+}
+
+function bc(s){return s>=70?'#0a7a45':s>=50?'#b85c00':'#999990';}
+function rCls(r){return {'중랑구':'r-중랑구','관악구':'r-관악구','금천구':'r-금천구','성북구':'r-성북구','노원구':'r-노원구'}[r]||'r-중랑구';}
+function ageCls(y){var a=2026-y;return a>=30?'age-old':a>=20?'age-mid':'age-new';}
+
+function render(){
+  var q=document.getElementById('search').value.toLowerCase();
+  var rows=D.filter(function(d){
+    if(F.region!=='전체'&&d.region!==F.region)return false;
+    if(F.heat!=='전체'&&d.heat!==F.heat)return false;
+    if(F.terrain!=='전체'&&d.terrain!==F.terrain)return false;
+    if(F.horae!=='전체'&&d.hStr.indexOf(F.horae)<0)return false;
+    if(F.walk==='5'&&d.walkMin>5)return false;
+    if(F.walk==='10'&&d.walkMin>10)return false;
+    if(F.gang==='40'&&d.gangnam>40)return false;
+    if(F.gang==='50'&&(d.gangnam<=40||d.gangnam>50))return false;
+    if(F.gang==='51'&&d.gangnam<=50)return false;
+    if(F.units==='500'&&d.units<500)return false;
+    if(F.units==='1000'&&d.units<1000)return false;
+    if(F.units==='1500'&&d.units<1500)return false;
+    var rn=Math.round((d.price-d.prev)/d.prev*100);
+    if(F.rise==='plus'&&rn<=0)return false;
+    if(F.rise==='10'&&rn<10)return false;
+    if(q&&d.name.toLowerCase().indexOf(q)<0)return false;
+    return true;
+  });
+
+  var scored=rows.map(function(d){
+    var rn=Math.round((d.price-d.prev)/d.prev*100);
+    var diff=Math.abs(d.price-d.prev).toFixed(1);
+    var sign=rn>=0?'+':'-';
+    return Object.assign({},d,{score:calcScore(d),riseNum:rn,riseLabel:sign+diff+'억 ('+sign+rn+'%)',risePos:rn>0});
+  });
+
+  scored.sort(function(a,b){
+    var av,bv;
+    if(SK==='name')return a.name.localeCompare(b.name)*SD;
+    if(SK==='year'){av=a.year;bv=b.year;}
+    else if(SK==='units'){av=a.units;bv=b.units;}
+    else if(SK==='walk')return(a.walkMin-b.walkMin)*(-SD);
+    else if(SK==='gangnam')return(a.gangnam-b.gangnam)*(-SD);
+    else if(SK==='price'){av=a.price;bv=b.price;}
+    else if(SK==='rise'){av=a.riseNum;bv=b.riseNum;}
+    else{av=a.score;bv=b.score;}
+    return(av-bv)*SD;
+  });
+
+  var html='';
+  for(var i=0;i<scored.length;i++){
+    var d=scored[i];
+    var age=2026-d.year;
+    var sCls=d.schoolGrade==='상'?'s-상':d.schoolGrade==='중'?'s-중':'s-하';
+    var tagsH='';
+    for(var j=0;j<d.horae.length;j++){
+      var h=d.horae[j];
+      var tc=h.indexOf('GTX')>=0||h.indexOf('신안산')>=0?'tag-gtx':h.indexOf('면목선')>=0||h.indexOf('동북선')>=0||h.indexOf('우이신설')>=0?'tag-line':h.indexOf('재건축')>=0||h.indexOf('노후')>=0?'tag-re':'tag-default';
+      tagsH+='<span class="tag '+tc+'">'+h+'</span>';
+    }
+    html+='<tr class="'+(i===0?'r1':'')+'">'
+      +'<td><span class="rank-n '+(i===0?'rank-1':'')+'">'+(i+1)+'</span></td>'
+      +'<td><div class="score-wrap"><div class="bar-bg"><div class="bar-fill" style="width:'+d.score+'%;background:'+bc(d.score)+'"></div></div><span class="score-num" style="color:'+bc(d.score)+'">'+d.score+'</span></div></td>'
+      +'<td><div class="name-main">'+d.name+'</div><div class="name-sub">'+d.dong+'</div></td>'
+      +'<td><span class="rbadge '+rCls(d.region)+'">'+d.region+'</span></td>'
+      +'<td><span class="pill '+ageCls(d.year)+'">'+d.year+'년</span><div style="font-size:11px;color:var(--text3);margin-top:3px">'+age+'년차</div></td>'
+      +'<td style="font-size:13px;font-weight:600">'+d.units.toLocaleString()+'<div style="font-size:11px;color:var(--text3);font-weight:400">세대</div></td>'
+      +'<td class="walk-'+d.walkC+'"><div class="ws">'+d.walkStation+'</div><div class="wl">'+d.walkLine+'</div></td>'
+      +'<td><span class="pill h-'+d.heat+'">'+d.heat+'</span></td>'
+      +'<td><span class="pill t-'+d.terrain+'">'+d.terrain+'</span></td>'
+      +'<td><span class="'+sCls+'">'+d.schoolGrade+'등급</span><span class="s-sub">'+d.schoolLabel+'</span></td>'
+      +'<td>'
+        +'<div class="fac-item"><span class="fac-'+(d.martY?'ok':'no')+'">🏬</span><span class="fac-txt">'+d.mart+'<br>'+d.martDist+'</span></div>'
+        +'<div class="fac-item"><span class="fac-'+(d.hospY?'ok':'no')+'">🏥</span><span class="fac-txt">'+d.hosp+'<br>'+d.hospDist+'</span></div>'
+      +'</td>'
+      +'<td style="font-size:13px;font-weight:600;color:var(--text2);white-space:nowrap">'+d.gangLabel+'</td>'
+      +'<td><div class="price-main">'+d.priceLabel+'</div></td>'
+      +'<td><div class="'+(d.risePos?'change-up':'change-dn')+'">'+d.riseLabel+'</div></td>'
+      +'<td><div class="horae-wrap">'+tagsH+'</div></td>'
+      +'</tr>';
+  }
+
+  document.getElementById('tbody').innerHTML=html||'<tr><td colspan="15" style="text-align:center;padding:48px;color:var(--text3);font-size:14px">조건에 맞는 단지가 없습니다</td></tr>';
+
+  var best=scored[0];
+  var bW=scored.slice().sort(function(a,b){return a.walkMin-b.walkMin;})[0];
+  var bR=scored.slice().sort(function(a,b){return b.riseNum-a.riseNum;})[0];
+  var cheap=scored.slice().sort(function(a,b){return a.price-b.price;})[0];
+  var bG=scored.slice().sort(function(a,b){return a.gangnam-b.gangnam;})[0];
+  var avgP=scored.length?Math.round(scored.reduce(function(s,d){return s+d.price;},0)/scored.length*10)/10:0;
+
+  document.getElementById('summary').innerHTML=
+    '<div class="sc"><div class="lbl">표시 단지</div><div class="val">'+scored.length+'</div><div class="sub">개 단지</div></div>'
+    +'<div class="sc"><div class="lbl">평균 시세</div><div class="val">'+avgP+'억</div><div class="sub">20평대 기준</div></div>'
+    +'<div class="sc"><div class="lbl">종합 1위</div><div class="val" style="font-size:14px">'+(best?best.name:'-')+'</div><div class="sub">'+(best?'점수 '+best.score:'')+'</div></div>'
+    +'<div class="sc"><div class="lbl">역 가장 가까운</div><div class="val" style="font-size:13px">'+(bW?bW.name:'-')+'</div><div class="sub">'+(bW?bW.walkStation:'')+'</div></div>'
+    +'<div class="sc"><div class="lbl">시세상승 1위</div><div class="val" style="font-size:13px">'+(bR?bR.name:'-')+'</div><div class="sub">'+(bR?bR.riseLabel:'')+'</div></div>'
+    +'<div class="sc"><div class="lbl">20평대 최저가</div><div class="val" style="font-size:13px">'+(cheap?cheap.name:'-')+'</div><div class="sub">'+(cheap?cheap.priceLabel:'')+'</div></div>'
+    +'<div class="sc"><div class="lbl">강남 최근접</div><div class="val" style="font-size:13px">'+(bG?bG.name:'-')+'</div><div class="sub">'+(bG?bG.gangnam+'분':'')+'</div></div>';
+}
+loadPrices();
+</script>
+</body>
+</html>
